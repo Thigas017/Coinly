@@ -6,8 +6,9 @@ import org.springframework.boot.test.context.SpringBootTest
 @SpringBootTest
 class BackendApplicationTests {
 
-	@Test
-	fun contextLoads() {
-	}
+	//Temporarily commented out until connected to the database
+	//@Test
+	//fun contextLoads() {
+	//}
 
 }
