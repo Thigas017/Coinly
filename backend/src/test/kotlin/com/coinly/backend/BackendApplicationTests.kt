@@ -6,9 +6,9 @@ import org.springframework.boot.test.context.SpringBootTest
 @SpringBootTest
 class BackendApplicationTests {
 
-	//Temporarily commented out until connected to the database
-	//@Test
-	//fun contextLoads() {
-	//}
+	@Disabled("TODO: Reativar este teste de contextLoads assim que a ligação à base de dados PostgreSQL estiver configurada no application.properties.")
+	@Test
+	fun contextLoads() {
+	}
 
 }
