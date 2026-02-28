@@ -56,7 +56,7 @@ tasks.withType<Test> {
 sonar {
     properties {
         property("sonar.projectKey", "Thigas017_Coinly") 
-        property("sonar.organization", "Thigas017")
+        property("sonar.organization", "thigas017-1")
         property("sonar.host.url", "https://sonarcloud.io")
     }
 }
