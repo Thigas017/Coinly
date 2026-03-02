@@ -1,0 +1,9 @@
+POST http://localhost:8080/api/coins
+Content-Type: application/json
+
+{
+  "name": "Moeda de 1 Euro",
+  "country": "Espanha",
+  "year": 2005,
+  "faceValue": 1.0
+}

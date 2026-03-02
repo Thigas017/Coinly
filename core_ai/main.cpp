@@ -51,7 +51,7 @@ int main() {
         }
 
         //Display processed frame with overlays
-        imshow("Coinly - Detecao de Moedas", frame);
+        imshow("Coinly - Detector", frame);
 
         //Exit loop if ESC key (27) is pressed
         if (waitKey(30) == 27) {
