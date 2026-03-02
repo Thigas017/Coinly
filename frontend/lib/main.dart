@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'add_coin_screen.dart';
+import 'dart:ffi' as ffi;
+import 'dart:io' show Platform;
 
 void main() {
   runApp(const CoinlyApp());
@@ -39,6 +41,22 @@ class _CoinListScreenState extends State<CoinListScreen> {
   void initState() {
     super.initState();
     fetchCoins(); //Fetch data when the screen initializes
+
+    //Test FFI: Try comms with C++
+    try {
+      final nativeLib = ffi.DynamicLibrary.open('libcore_ai.so');
+      //Search function test_connection
+      final testConnection = nativeLib.lookup<ffi.NativeFunction<ffi.Int32 Function()>>('test_connection').asFunction<int Function()>();
+
+      //Exec function C++!
+      final resultCpp = testConnection();
+      debugPrint('=========================================');
+      debugPrint('SUCCESS FFI! C++ RETURNED: $resultCpp 🔥');
+      debugPrint('=========================================');
+    } catch (e) {
+      debugPrint('ERROR FFI: Not possible to connect with C++. Error: $e');
+    }
+
   }
 
   Future<void> fetchCoins() async {
