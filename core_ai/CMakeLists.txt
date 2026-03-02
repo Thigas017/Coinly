@@ -7,6 +7,7 @@ set(OpenCV_DIR "C:/opencv/build")
 find_package(OpenCV REQUIRED)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
-add_executable(core_ai main.cpp)
+#add_executable(core_ai main.cpp)
+add_library(core_ai SHARED main.cpp) #Create shared library
 
 target_link_libraries(core_ai ${OpenCV_LIBS})

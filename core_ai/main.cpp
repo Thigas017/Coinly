@@ -1,66 +1,44 @@
 #include <opencv2/opencv.hpp>
-#include <iostream>
 #include <vector>
 
-using namespace cv;
-using namespace std;
+//Cross-platform export definition for Windows and other platforms
+//Windows and Android use different keywords to export functions
+#ifdef _WIN32
+    #define FFI_EXPORT __declspec(dllexport)
+#else
+    #define FFI_EXPORT __attribute__((visibility("default")))
+#endif
 
-int main() {
-    VideoCapture cap(0);
+extern "C" { //Prevent name mangling so Flutter can locate the function
 
-    if (!cap.isOpened()) {
-        cout << "Error: Cannot open camera." << endl;
-        return -1;
+    //Function called from Flutter via FFI
+    //Receives: Grayscale image bytes, width, and height
+    //Returns: 1 if a coin is detected, 0 otherwise
+    //Outputs: Circle data (center X, center Y, radius) through out_circle
+    FFI_EXPORT int detect_coin(unsigned char *image_bytes, int width, int height, float *out_circle) {
+
+        //Convert raw image bytes into an OpenCV matrix
+        cv::Mat gray(height, width, CV_8UC1, image_bytes);
+
+        //Apply Gaussian blur to reduce noise
+        cv::GaussianBlur(gray, gray, cv::Size(9, 9), 2, 2);
+
+        //Perform Hough Circle Transform for circle detection
+        std::vector<cv::Vec3f> circles;
+        cv::HoughCircles(gray, circles, cv::HOUGH_GRADIENT,
+                         1, gray.rows / 8,
+                         150, 60,
+                         15, 200);
+
+        //Check if any circles were detected
+        if (!circles.empty()) {
+            //Return the first detected circle
+            out_circle[0] = circles[0][0]; //Center X
+            out_circle[1] = circles[0][1]; //Center Y
+            out_circle[2] = circles[0][2]; //Radius
+
+            return 1; //Detection successful
+        }
+        return 0; //No coin detected
     }
-
-    cout << "Coin detection mode active. Press ESC to exit." << endl;
-
-    Mat frame, gray;
-
-    while (true) {
-        cap.read(frame);
-        if (frame.empty()) {
-            cout << "Error: Empty frame." << endl;
-            break;
-        }
-
-        //Convert color image to grayscale
-        cvtColor(frame, gray, COLOR_BGR2GRAY);
-
-        //Apply Gaussian blur to reduce noise and background textures
-        GaussianBlur(gray, gray, Size(9, 9), 2, 2);
-
-        //Detect circular shapes using the Hough Circle Transform
-        vector<Vec3f> circles; //Stores detected circle parameters (x, y, radius)
-
-        HoughCircles(gray, circles, HOUGH_GRADIENT,
-                     1, gray.rows / 8, //Minimum distance between detected circles
-                     150, 60,          //Detection sensitivity thresholds
-                     15, 200);         //Minimum and maximum radius (in pixels)
-
-        //Draw detected circles on the original frame
-        for (size_t i = 0; i < circles.size(); i++) {
-            Point center(cvRound(circles[i][0]), cvRound(circles[i][1])); //Circle center
-            int radius = cvRound(circles[i][2]);                          //Circle radius
-
-            //Draw red dot at circle center
-            circle(frame, center, 3, Scalar(0, 0, 255), -1, 8, 0);
-
-            //Draw green outline around detected circle
-            circle(frame, center, radius, Scalar(0, 255, 0), 3, 8, 0);
-        }
-
-        //Display processed frame with overlays
-        imshow("Coinly - Detector", frame);
-
-        //Exit loop if ESC key (27) is pressed
-        if (waitKey(30) == 27) {
-            cout << "Closing camera..." << endl;
-            break;
-        }
-    }
-
-    cap.release();
-    destroyAllWindows();
-    return 0;
 }
