@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'add_coin_screen.dart';
 
 void main() {
   runApp(const CoinlyApp());
@@ -116,6 +117,22 @@ class _CoinListScreenState extends State<CoinListScreen> {
             ),
           );
         },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          //Open add coin screen and wait for result
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const AddCoinScreen()),
+          );
+
+          //If true is returned, refresh the coin list
+          if (result == true) {
+            setState(() { isLoading = true; });
+            fetchCoins();
+          }
+        },
+        child: const Icon(Icons.add),
       ),
     );
   }
