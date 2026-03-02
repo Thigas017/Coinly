@@ -28,6 +28,13 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+
+        externalNativeBuild {
+            cmake {
+                cppFlags("-std=c++17")
+                arguments("-DOpenCV_DIR=C:/opencv-android/sdk/native/jni")
+            }
+        }
     }
 
     externalNativeBuild {
