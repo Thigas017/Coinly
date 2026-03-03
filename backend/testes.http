@@ -1,9 +1,30 @@
+### Criar uma moeda de teste via Multipart (Sem imagem)
 POST http://localhost:8080/api/coins
-Content-Type: application/json
+Content-Type: multipart/form-data; boundary=Boundary12345
 
-{
-  "name": "Moeda de 1 Euro",
-  "country": "Espanha",
-  "year": 2005,
-  "faceValue": 1.0
-}
+--Boundary12345
+Content-Disposition: form-data; name="id"
+
+uuid-teste-http-9999
+--Boundary12345
+Content-Disposition: form-data; name="name"
+
+Moeda de Teste HTTP
+--Boundary12345
+Content-Disposition: form-data; name="country"
+
+Portugal
+--Boundary12345
+Content-Disposition: form-data; name="year"
+
+2024
+--Boundary12345
+Content-Disposition: form-data; name="faceValue"
+
+2.0
+--Boundary12345--
+
+
+### Ver todas as moedas na Base de Dados
+GET http://localhost:8080/api/coins
+Accept: application/json
