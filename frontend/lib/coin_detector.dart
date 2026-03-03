@@ -4,19 +4,21 @@ import 'package:ffi/ffi.dart';
 
 //C function signature (C/C++ side)
 //int detect_coin(unsigned char* image_bytes, int width, int height, float* out_circle)
-typedef DetectCoinCFunc = ffi.Int32 Function(
-    ffi.Pointer<ffi.Uint8> imageBytes,
-    ffi.Int32 width,
-    ffi.Int32 height,
-    ffi.Pointer<ffi.Float> outCircle,
+typedef DetectCoinCFunc =
+    ffi.Int32 Function(
+      ffi.Pointer<ffi.Uint8> imageBytes,
+      ffi.Int32 width,
+      ffi.Int32 height,
+      ffi.Pointer<ffi.Float> outCircle,
     );
 
 //Dart function signature (Flutter side)
-typedef DetectCoinDartFunc = int Function(
-    ffi.Pointer<ffi.Uint8> imageBytes,
-    int width,
-    int height,
-    ffi.Pointer<ffi.Float> outCircle,
+typedef DetectCoinDartFunc =
+    int Function(
+      ffi.Pointer<ffi.Uint8> imageBytes,
+      int width,
+      int height,
+      ffi.Pointer<ffi.Float> outCircle,
     );
 
 class CoinDetector {
@@ -41,7 +43,10 @@ class CoinDetector {
 
   //Public method used by Flutter screens
   List<double>? processImage(
-      ffi.Pointer<ffi.Uint8> imageBytes, int width, int height) {
+    ffi.Pointer<ffi.Uint8> imageBytes,
+    int width,
+    int height,
+  ) {
     //Allocate memory for the output values (X, Y, Radius)
     final outCircle = calloc<ffi.Float>(3);
 

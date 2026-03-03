@@ -1,10 +1,12 @@
-import 'dart:io';//Required to load image files from device storage
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+import 'package:uuid/uuid.dart';
+import 'database_helper.dart';
 
 class AddCoinScreen extends StatefulWidget {
-  final String? imagePath;//Optional captured image path
+  final String? imagePath; //Optional captured image path
 
   const AddCoinScreen({super.key, this.imagePath});
 
@@ -23,48 +25,58 @@ class _AddCoinScreenState extends State<AddCoinScreen> {
   bool _isSaving = false;
 
   Future<void> _saveCoin() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isSaving = true;
     });
 
-    //Currently sends only metadata to backend
-    //Image upload will be implemented separately (multipart request)
-    final url = Uri.parse('http://10.0.2.2:8080/api/coins');
-
-    final newCoin = {
-      "name": _nameController.text,
-      "country": _countryController.text,
-      "year": int.parse(_yearController.text),
-      "faceValue": double.parse(
-        _valueController.text.replaceAll(',', '.'),
-      ),
-    };
-
     try {
-      final response = await http.post(
-        url,
-        headers: {"Content-Type": "application/json"},
-        body: json.encode(newCoin),
-      );
+      final String newId = const Uuid().v4();
+      String? permanentImagePath;
 
-      if (response.statusCode == 200 ||
-          response.statusCode == 201) {
-        if (mounted) {
-          Navigator.pop(context, true);
-        }
-      } else {
-        _showError(
-          'Server error: ${response.statusCode}',
+      if (widget.imagePath != null) {
+        final String currentPath = widget.imagePath!;
+        final File tempImage = File(currentPath);
+        final Directory appDir = await getApplicationDocumentsDirectory();
+
+        final String fileName = '${newId}_${path.basename(currentPath)}';
+        permanentImagePath = path.join(appDir.path, fileName);
+
+        await tempImage.copy(permanentImagePath);
+        debugPrint("PIC SAVED AT: $permanentImagePath");
+      }
+
+      final newCoin = {
+        "id": newId,
+        "name": _nameController.text,
+        "country": _countryController.text,
+        "year": int.parse(_yearController.text),
+        "faceValue": double.parse(_valueController.text.replaceAll(',', '.')),
+        "imagePath": permanentImagePath,
+        "isSynced": 0,
+      };
+
+      await DatabaseHelper.instance.insertCoin(newCoin);
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Coin saved at local vault!'),
+            backgroundColor: Colors.green,
+          ),
         );
+        Navigator.pop(context, true);
       }
     } catch (e) {
-      _showError(
-        'Connection error: Unable to reach server.',
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -72,17 +84,6 @@ class _AddCoinScreenState extends State<AddCoinScreen> {
         });
       }
     }
-  }
-
-  void _showError(String message) {
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.red,
-      ),
-    );
   }
 
   @override
@@ -100,12 +101,9 @@ class _AddCoinScreenState extends State<AddCoinScreen> {
       appBar: AppBar(
         title: const Text(
           'New Coin',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor:
-        Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -113,15 +111,12 @@ class _AddCoinScreenState extends State<AddCoinScreen> {
           key: _formKey,
           child: ListView(
             children: [
-
               //Preview captured image if available
               if (widget.imagePath != null)
                 Padding(
-                  padding:
-                  const EdgeInsets.only(bottom: 24.0),
+                  padding: const EdgeInsets.only(bottom: 24.0),
                   child: ClipRRect(
-                    borderRadius:
-                    BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16),
                     child: Image.file(
                       File(widget.imagePath!),
                       height: 250,
@@ -133,30 +128,24 @@ class _AddCoinScreenState extends State<AddCoinScreen> {
 
               TextFormField(
                 controller: _nameController,
-                decoration:
-                const InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Coin Name',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) =>
-                value!.isEmpty
-                    ? 'Please enter a name'
-                    : null,
+                    value!.isEmpty ? 'Please enter a name' : null,
               ),
 
               const SizedBox(height: 16),
 
               TextFormField(
                 controller: _countryController,
-                decoration:
-                const InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Country',
                   border: OutlineInputBorder(),
                 ),
                 validator: (value) =>
-                value!.isEmpty
-                    ? 'Please enter a country'
-                    : null,
+                    value!.isEmpty ? 'Please enter a country' : null,
               ),
 
               const SizedBox(height: 16),
@@ -166,18 +155,12 @@ class _AddCoinScreenState extends State<AddCoinScreen> {
                   Expanded(
                     child: TextFormField(
                       controller: _yearController,
-                      decoration:
-                      const InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: 'Year',
-                        border:
-                        OutlineInputBorder(),
+                        border: OutlineInputBorder(),
                       ),
-                      keyboardType:
-                      TextInputType.number,
-                      validator: (value) =>
-                      value!.isEmpty
-                          ? 'Required'
-                          : null,
+                      keyboardType: TextInputType.number,
+                      validator: (value) => value!.isEmpty ? 'Required' : null,
                     ),
                   ),
 
@@ -185,23 +168,15 @@ class _AddCoinScreenState extends State<AddCoinScreen> {
 
                   Expanded(
                     child: TextFormField(
-                      controller:
-                      _valueController,
-                      decoration:
-                      const InputDecoration(
+                      controller: _valueController,
+                      decoration: const InputDecoration(
                         labelText: 'Value (€)',
-                        border:
-                        OutlineInputBorder(),
+                        border: OutlineInputBorder(),
                       ),
-                      keyboardType:
-                      const TextInputType
-                          .numberWithOptions(
+                      keyboardType: const TextInputType.numberWithOptions(
                         decimal: true,
                       ),
-                      validator: (value) =>
-                      value!.isEmpty
-                          ? 'Required'
-                          : null,
+                      validator: (value) => value!.isEmpty ? 'Required' : null,
                     ),
                   ),
                 ],
@@ -212,30 +187,22 @@ class _AddCoinScreenState extends State<AddCoinScreen> {
               SizedBox(
                 height: 50,
                 child: ElevatedButton.icon(
-                  onPressed:
-                  _isSaving ? null : _saveCoin,
+                  onPressed: _isSaving ? null : _saveCoin,
                   icon: _isSaving
                       ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child:
-                    CircularProgressIndicator(
-                      strokeWidth: 2,
-                    ),
-                  )
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
                       : const Icon(Icons.save),
                   label: Text(
-                    _isSaving
-                        ? 'Saving...'
-                        : 'Save Coin',
-                    style: const TextStyle(
-                        fontSize: 16),
+                    _isSaving ? 'Saving...' : 'Save Coin',
+                    style: const TextStyle(fontSize: 16),
                   ),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                    Theme.of(context)
-                        .colorScheme
-                        .primaryContainer,
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.primaryContainer,
                   ),
                 ),
               ),

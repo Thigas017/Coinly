@@ -38,13 +38,16 @@ class _ScannerScreenState extends State<ScannerScreen> {
         _cameras![0],
         ResolutionPreset.medium,
         enableAudio: false,
-        imageFormatGroup: ImageFormatGroup.yuv420, //Plane 0 provides grayscale data
+        imageFormatGroup:
+            ImageFormatGroup.yuv420, //Plane 0 provides grayscale data
       );
 
       try {
         await _controller!.initialize();
         if (mounted) {
-          setState(() { _isCameraInitialized = true; });
+          setState(() {
+            _isCameraInitialized = true;
+          });
 
           //Start real-time image stream (approx. 30 FPS)
           _controller!.startImageStream((CameraImage image) {
@@ -94,17 +97,23 @@ class _ScannerScreenState extends State<ScannerScreen> {
         if (isCenteredX && isCenteredY) {
           debugPrint("Coin Centered! X:$coinX, Y:$coinY, R:$coinRadius");
           if (!_coinDetected && mounted) {
-            setState(() { _coinDetected = true; });
+            setState(() {
+              _coinDetected = true;
+            });
           }
         } else {
           // Detected outside center
           if (_coinDetected && mounted) {
-            setState(() { _coinDetected = false; });
+            setState(() {
+              _coinDetected = false;
+            });
           }
         }
       } else {
         if (_coinDetected && mounted) {
-          setState(() { _coinDetected = false; });
+          setState(() {
+            _coinDetected = false;
+          });
         }
       }
     } catch (e) {
@@ -143,8 +152,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
       //Restart image stream if capture fails
       if (mounted) {
-        _controller!
-            .startImageStream((image) => _processCameraImage(image));
+        _controller!.startImageStream((image) => _processCameraImage(image));
       }
     }
   }
@@ -170,114 +178,116 @@ class _ScannerScreenState extends State<ScannerScreen> {
       backgroundColor: Colors.black,
       body: _isCameraInitialized
           ? Stack(
-        fit: StackFit.expand,
-        children: [
-          Center(
-            child: AspectRatio(
-              aspectRatio: 1 / _controller!.value.aspectRatio,
-              child: CameraPreview(_controller!),
-            ),
-          ),
-
-          ColorFiltered(
-            colorFilter: ColorFilter.mode(
-              Colors.black.withValues(alpha: 0.5),
-              BlendMode.srcOut,
-            ),
-            child: Stack(
               fit: StackFit.expand,
               children: [
-                Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.black,
-                    backgroundBlendMode: BlendMode.dstOut,
-                  ),
-                ),
                 Center(
-                  child: Container(
-                    width: 280,
-                    height: 280,
-                    decoration: const BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
+                  child: AspectRatio(
+                    aspectRatio: 1 / _controller!.value.aspectRatio,
+                    child: CameraPreview(_controller!),
                   ),
                 ),
-              ],
-            ),
-          ),
 
-          Center(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              width: _coinDetected ? 280 : 250,
-              height: _coinDetected ? 280 : 250,
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: _coinDetected ? Colors.amberAccent : Colors.greenAccent,
-                  width: _coinDetected ? 5 : 2,
-                ),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-
-          //Bottom control panel (status text + capture button)
-          Positioned(
-            bottom: 40,
-            left: 0,
-            right: 0,
-            child: Column(
-              children: [
-                //Status text
-                Text(
-                  _coinDetected
-                      ? 'Coin centered!'
-                      : 'Center the coin within the circle...',
-                  style: TextStyle(
-                    color: _coinDetected
-                        ? Colors.amberAccent
-                        : Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    shadows: const [
-                      Shadow(color: Colors.black, blurRadius: 10)
+                ColorFiltered(
+                  colorFilter: ColorFilter.mode(
+                    Colors.black.withValues(alpha: 0.5),
+                    BlendMode.srcOut,
+                  ),
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      Container(
+                        decoration: const BoxDecoration(
+                          color: Colors.black,
+                          backgroundBlendMode: BlendMode.dstOut,
+                        ),
+                      ),
+                      Center(
+                        child: Container(
+                          width: 280,
+                          height: 280,
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 20), //Spacing between text and button
-
-                //Adaptive capture button
-                AnimatedOpacity(
-                  opacity: _coinDetected ? 1.0 : 0.4, //Reduced opacity when disabled
-                  duration: const Duration(milliseconds: 300),
-                  child: FloatingActionButton.large(
-                    //Enabled only when a coin is detected
-                    onPressed: _coinDetected ? _takePicture : null,
-                    backgroundColor: _coinDetected
-                        ? Colors.amberAccent
-                        : Colors.grey.shade800,
-                    elevation: _coinDetected ? 8 : 0,
-                    child: Icon(
-                      Icons.camera_alt,
-                      color: _coinDetected
-                          ? Colors.black
-                          : Colors.white54,
-                      size: 38,
+                Center(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    width: _coinDetected ? 280 : 250,
+                    height: _coinDetected ? 280 : 250,
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: _coinDetected
+                            ? Colors.amberAccent
+                            : Colors.greenAccent,
+                        width: _coinDetected ? 5 : 2,
+                      ),
+                      shape: BoxShape.circle,
                     ),
                   ),
                 ),
+
+                //Bottom control panel (status text + capture button)
+                Positioned(
+                  bottom: 40,
+                  left: 0,
+                  right: 0,
+                  child: Column(
+                    children: [
+                      //Status text
+                      Text(
+                        _coinDetected
+                            ? 'Coin centered!'
+                            : 'Center the coin within the circle...',
+                        style: TextStyle(
+                          color: _coinDetected
+                              ? Colors.amberAccent
+                              : Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          shadows: const [
+                            Shadow(color: Colors.black, blurRadius: 10),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(
+                        height: 20,
+                      ), //Spacing between text and button
+                      //Adaptive capture button
+                      AnimatedOpacity(
+                        opacity: _coinDetected ? 1.0 : 0.4,
+                        //Reduced opacity when disabled
+                        duration: const Duration(milliseconds: 300),
+                        child: FloatingActionButton.large(
+                          //Enabled only when a coin is detected
+                          onPressed: _coinDetected ? _takePicture : null,
+                          backgroundColor: _coinDetected
+                              ? Colors.amberAccent
+                              : Colors.grey.shade800,
+                          elevation: _coinDetected ? 8 : 0,
+                          child: Icon(
+                            Icons.camera_alt,
+                            color: _coinDetected
+                                ? Colors.black
+                                : Colors.white54,
+                            size: 38,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ],
-            ),
-          ),
-        ],
-      )
+            )
           : const Center(
-        child: CircularProgressIndicator(
-          color: Colors.greenAccent,
-        ),
-      ),
+              child: CircularProgressIndicator(color: Colors.greenAccent),
+            ),
     );
   }
 }
