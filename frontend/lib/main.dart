@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'add_coin_screen.dart';
+import 'scanner_screen.dart';
 import 'dart:ffi' as ffi;
 import 'dart:io' show Platform;
 
@@ -90,11 +91,19 @@ class _CoinListScreenState extends State<CoinListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'My Collection',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
+        title: const Text('My Collection', style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.camera_alt),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const ScannerScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(
