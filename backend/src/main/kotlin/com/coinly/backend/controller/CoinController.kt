@@ -40,6 +40,7 @@ class CoinController(private val repository: CoinRepository) {
         @RequestParam("country") country: String,
         @RequestParam("year") year: Int,
         @RequestParam("faceValue") faceValue: BigDecimal,
+        @RequestParam("anomalies", required = false) anomalies: String?,
         @RequestParam("image", required = false) image: MultipartFile?
     ): ResponseEntity<Coin> {
 
@@ -61,7 +62,8 @@ class CoinController(private val repository: CoinRepository) {
             country = country,
             faceValue = faceValue,
             year = year,
-            imageUrl = imageUrl
+            imageUrl = imageUrl,
+            anomalies = anomalies
         )
 
         //Persist entity to database

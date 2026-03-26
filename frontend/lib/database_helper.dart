@@ -22,7 +22,12 @@ class DatabaseHelper {
 
     //Opens the database file
     //If it does not exist, a new clean database file will be created
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return await openDatabase(
+      path,
+      version: 2, // Incremented version to apply schema changes
+      onCreate: _createDB,
+      onUpgrade: _upgradeDB, // Handles migration for existing databases
+    );
   }
 
   Future _createDB(Database db, int version) async {
@@ -35,9 +40,17 @@ class DatabaseHelper {
         year INTEGER NOT NULL,
         faceValue REAL NOT NULL,
         imagePath TEXT,
+        anomalies TEXT,
         isSynced INTEGER NOT NULL DEFAULT 0
       )
     ''');
+  }
+
+  Future _upgradeDB(Database db, int oldVersion, int newVersion) async {
+    //Safely adds the new column to existing local databases
+    if (oldVersion < 2) {
+      await db.execute('ALTER TABLE coins ADD COLUMN anomalies TEXT;');
+    }
   }
 
   //Inserts a coin into local storage

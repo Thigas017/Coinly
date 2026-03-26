@@ -1,14 +1,12 @@
 import 'dart:io';//Required to load FileImage from stored image path
 import 'package:flutter/material.dart';
-import 'package:frontend/sync_service.dart';
 import 'dart:ffi' as ffi;
+import 'dart:async';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 import 'database_helper.dart';//Local SQLite storage helper
 import 'add_coin_screen.dart';
 import 'scanner_screen.dart';
-
-import 'dart:async';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'sync_service.dart';
 
 void main() {
@@ -207,7 +205,35 @@ class _CoinListScreenState extends State<CoinListScreen> {
                 coin['name'] ?? 'Unnamed coin',
                 style: const TextStyle(fontWeight: FontWeight.bold),
               ),
-              subtitle: Text('${coin['country']} • ${coin['year']}'),
+
+              //Displays country, year and conditionally renders AI anomalies
+              subtitle: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('${coin['country']} • ${coin['year']}'),
+                  if (coin['anomalies'] != null && coin['anomalies'].toString().isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.auto_awesome, size: 14, color: Colors.amber),
+                          const SizedBox(width: 4),
+                          Expanded(
+                            child: Text(
+                              coin['anomalies'],
+                              style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.amber.shade700,
+                                  fontStyle: FontStyle.italic
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
 
               //Displays face value and synchronization state
               trailing: Column(

@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:convert';//Required for JSON decoding
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'database_helper.dart';
@@ -32,6 +32,11 @@ class SyncService {
         request.fields['country'] = coin['country'];
         request.fields['year'] = coin['year'].toString();
         request.fields['faceValue'] = coin['faceValue'].toString();
+
+        //Attach anomalies if AI detected any
+        if (coin['anomalies'] != null) {
+          request.fields['anomalies'] = coin['anomalies'].toString();
+        }
 
         //Attach local image file if available
         if (coin['imagePath'] != null) {
@@ -93,6 +98,7 @@ class SyncService {
             "year": sCoin['year'],
             "faceValue": sCoin['faceValue'],
             "imagePath": finalImagePath,
+            "anomalies": sCoin['anomalies'], //Extract anomalies from server response
             "isSynced": 1,
           });
         }

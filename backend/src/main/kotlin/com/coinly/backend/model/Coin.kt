@@ -26,6 +26,10 @@ class Coin(
     @Column(nullable = true)
     val year: Int? = null,
 
+    //Stores AI detection results regarding coin anomalies or mint marks
+    @Column(nullable = true)
+    var anomalies: String? = null,
+
     //Stores associated image filename in persistent storage
     @Column(name = "image_url", nullable = true)
     var imageUrl: String? = null
